@@ -30,27 +30,6 @@ let now = new Date();
 let dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 let prevDayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 
-// client.connect(async err => {
-//   const dbo = client.db('metaverse');
-//   await dbo
-//     .collection('spread-points')
-//     .insertOne({ dayIdentifier: 2036, datapoints: [], date: new Date() });
-//   setInterval(async () => {
-//     now = new Date();
-//     dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
-//     if (dayIdentifier !== prevDayIdentifier) {
-//       await dbo
-//         .collection('spread-points')
-//         .insertOne({ dayIdentifier, datapoints: [] });
-//       prevDayIdentifier = dayIdentifier;
-//     }
-//     console.log(
-//       'inside the interval, the getSpreads function is going to be called now'
-//     );
-//     functions.getSpreads(dayIdentifier, dbo);
-//   }, 3000);
-// });
-
 app.get('/', (req, res) => {
   res.render('landing', { home: { aloja: 46 }, marketIds: data.marketIds });
 });
@@ -134,6 +113,6 @@ setTimeout(function run() {
 }, DELAY);
 
 const port = 3000;
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Express server listening at ${port}`);
 });
