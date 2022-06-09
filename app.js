@@ -30,30 +30,34 @@ let now = new Date();
 let dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 let prevDayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 
-client.connect(async err => {
-  const dbo = client.db('metaverse');
-  await dbo
-    .collection('spread-points')
-    .insertOne({ dayIdentifier: 2036, datapoints: [], date: new Date() });
-  setInterval(async () => {
-    now = new Date();
-    dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
-    if (dayIdentifier !== prevDayIdentifier) {
-      await dbo
-        .collection('spread-points')
-        .insertOne({ dayIdentifier, datapoints: [] });
-      prevDayIdentifier = dayIdentifier;
-    }
-    functions.getSpreads(dayIdentifier, dbo);
-  }, 3000);
-});
+// client.connect(async err => {
+//   const dbo = client.db('metaverse');
+//   await dbo
+//     .collection('spread-points')
+//     .insertOne({ dayIdentifier: 2036, datapoints: [], date: new Date() });
+//   setInterval(async () => {
+//     now = new Date();
+//     dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
+//     if (dayIdentifier !== prevDayIdentifier) {
+//       await dbo
+//         .collection('spread-points')
+//         .insertOne({ dayIdentifier, datapoints: [] });
+//       prevDayIdentifier = dayIdentifier;
+//     }
+//     console.log(
+//       'inside the interval, the getSpreads function is going to be called now'
+//     );
+//     functions.getSpreads(dayIdentifier, dbo);
+//   }, 3000);
+// });
 
 app.get('/', (req, res) => {
   client.connect(async err => {
-    const dbo = client.db('metaverse');
-    const thisDay = await dbo
-      .collection('spread-points')
-      .findOne({ dayIdentifier: 2036 });
+    // const dbo = client.db('metaverse');
+    // const thisDay = await dbo
+    //   .collection('spread-points')
+    //   .findOne({ dayIdentifier: 2036 });
+    // console.log('THIS DAY IS: ', thisDay);
     res.render('landing', { home: { aloja: 46 }, marketIds: data.marketIds });
   });
 });
@@ -96,6 +100,19 @@ app.get('/api', async (req, res, next) => {
     console.log('there was an error');
     console.log(error);
   }
+});
+
+app.get('/api/spreads', async (req, res) => {
+  const spreads = await functions.fetchBudaForSpreadInfo();
+  res.json(spreads);
+});
+
+app.get('/api/spreads/:marketid', async (req, res) => {
+  const market = await functions.fetchBudaForIndividualSpreadInfo(
+    req.params.marketid
+  );
+
+  res.json({ market });
 });
 
 app.get('/api/testing', (req, res) => {
