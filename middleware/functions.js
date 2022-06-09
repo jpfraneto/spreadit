@@ -53,7 +53,6 @@ functions.fetchBudaForIndividualSpreadInfo = async marketId => {
     const marketInfo = response.data.ticker;
     let spreadValue =
       Number(marketInfo.min_ask[0]) - Number(marketInfo.max_bid[0]);
-    console.log('the spread value is: ', spreadValue.toFixed(8));
     if (spreadValue > 1) spreadValue = Math.floor(spreadValue).toString();
     else spreadValue = spreadValue.toFixed(8);
     return {

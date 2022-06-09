@@ -52,14 +52,7 @@ let prevDayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 // });
 
 app.get('/', (req, res) => {
-  client.connect(async err => {
-    // const dbo = client.db('metaverse');
-    // const thisDay = await dbo
-    //   .collection('spread-points')
-    //   .findOne({ dayIdentifier: 2036 });
-    // console.log('THIS DAY IS: ', thisDay);
-    res.render('landing', { home: { aloja: 46 }, marketIds: data.marketIds });
-  });
+  res.render('landing', { home: { aloja: 46 }, marketIds: data.marketIds });
 });
 
 app.get('/testing', (req, res, next) => {
@@ -111,8 +104,12 @@ app.get('/api/spreads/:marketid', async (req, res) => {
   const market = await functions.fetchBudaForIndividualSpreadInfo(
     req.params.marketid
   );
-
   res.json({ market });
+});
+
+app.post('/api/spreads/:marketid', async (req, res) => {
+  console.log('here is where the pooling will take place');
+  res.json({ 123: 456 });
 });
 
 app.get('/api/testing', (req, res) => {

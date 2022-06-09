@@ -18,23 +18,23 @@
 <body>
 
     <h1>Spreadit!</h1>
-    <p>
-        <%= home.aloja %>
-    </p>
-    <button id="fetch-database">Get More Data!</button>
-    <table id="mytable">
-        <thead class="table-header">
-            <th>X</th>
-            <% marketIds.forEach(x=> { %>
-                <th>
-                    <%= x %>
-                </th>
-                <% }) %>
-        </thead>
-        <tbody id="table-body">
+    <p>Here you can get the information of the spreads for each market, or for <a href="/api/spreads">all of them at
+            once!</a></p>
+    <p>/api/spreads -> Get the info for all the markets</p>
+    <p>/api/spreads/<market-id> -> Get the info for the individual market</p>
 
-        </tbody>
-    </table>
+    <ul>
+        <% marketIds.forEach(x=> { %>
+            <li>
+                <a href="/api/spreads/<%=x%>">
+                    <%=x%>
+                </a>
+            </li>
+
+            <% }) %>
+    </ul>
+
+
     <script src="/scripts/script.js"></script>
 </body>
 
