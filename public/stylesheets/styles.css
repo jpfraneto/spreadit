@@ -1,0 +1,6 @@
+body {
+}
+.table-header > * {
+  font-size: 0.7rem;
+  margin: 0 4px;
+}

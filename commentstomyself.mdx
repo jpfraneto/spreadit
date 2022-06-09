@@ -1,0 +1,26 @@
+---
+title: Comments to myself
+---
+
+Para hacer un mejor trabajo con la misión que tengo, voy a ir haciendo los siguientes comentarios a partir de lo que vaya descubriendo en los distintos recursos que voy consumiendo.
+
+MATERIA:
+
+- BUDA'S API: https://www.buda.com/api/[version]/[path].[format]
+- GET /markets/<market_id> -> market_id es opcional, y si hago el fetch request sin este parámetro me entrega una lista de todos los mercados y los distintos identificadores de éstos. Esto va a ser muy útil a la hora de construir la API que calcule los spread de estos diferentes mercados. Voy a tener que iterar sobre cada uno de estos mercados y después hacer una llamada específica a cada mercado para obtener los parámetros min_ask y max_bid.
+- GET /markets/<market_id>/volume -> ask_volume representa el monto transado en órdenes de venta y bid_volume corresponde al monto transado en órdenes de compra.
+- GET /markets/<market_id>/ticker -> También va a ser muy útil, respondiendo con las mejores ofertas de compra y venta (bid y ask), así como el precio de la última transacción.
+- GET /markets/<market_id>/order_book -> Listado de todas las órdenes que se encuentran activas en el mercado seleccionado.
+- GET markets/<market_id>/trades -> Listado de las transacciones más recientes del mercado indicado.
+
+IDEAS:
+
+- Conseguir la misma información de los mercados pero de otros exchanges, y darle la opción al usuario en la UX de elegir desde donde quiere traer la información. Estos otros mercados los voy a sacar de acá: https://github.com/ccxt/ccxt (Llegué a esta library a través de la documentación de la api de buda)
+
+PREGUNTAS:
+
+- De dónde viene la información que BUDA provee en su API?
+
+COMENTARIOS:
+
+- Me hice una cuenta en buda.com y para agregar mi cuenta bancaria no es directa la interfaz de usuario. 
