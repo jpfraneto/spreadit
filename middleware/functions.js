@@ -41,7 +41,7 @@ functions.fetchBudaForSpreadInfo = async () => {
       // price_variation_7d: x.price_variation_7d,
     };
   });
-  return { markets };
+  return { spreads: markets };
 };
 
 functions.fetchBudaForIndividualSpreadInfo = async marketId => {
