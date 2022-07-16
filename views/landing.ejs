@@ -17,23 +17,10 @@
 
 <body>
 
-    <h1>Spreadit!</h1>
-    <p>Here you can get the information of the spreads for each market, or for <a href="/api/spreads">all of them at
-            once!</a></p>
-    <p>/api/spreads -> Get the info for all the markets</p>
-    <p>/api/spreads/<market-id> -> Get the info for the individual market</p>
-
-    <ul>
-        <% marketIds.forEach(x=> { %>
-            <li>
-                <a href="/api/spreads/<%=x%>">
-                    <%=x%>
-                </a>
-            </li>
-
-            <% }) %>
-    </ul>
-
+    <h1>Spreadit</h1>
+    <a target='_blank' href='https://docs.spreadit.pro'>Docs</a>
+    <a target='_blank' href='https://api.spreadit.pro'>Live Version</a>
+    <a target='_blank' href='https://www.spreadit.pro'>Front End</a>
 
     <script src="/scripts/script.js"></script>
 </body>

@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const axios = require('axios').default;
+const path = require('path');
 const cors = require('cors');
 const data = require('./data/markets');
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -29,10 +30,6 @@ const DELAY = 1000;
 let now = new Date();
 let dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 let prevDayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
-
-app.get('/', (req, res) => {
-  res.render('landing', { home: { aloja: 46 }, marketIds: data.marketIds });
-});
 
 app.get('/api/markets', (req, res) => {
   res.json({ markets: data.marketIds });
@@ -120,7 +117,11 @@ app.get('/api/spreads/:marketid/:frequence', async (req, res) => {
   }
 });
 
-const port = 3000;
-app.listen(process.env.PORT || port, () => {
+app.get('/*', (req, res) => {
+  res.render('landing', { marketIds: data.marketIds });
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
   console.log(`Express server listening at ${port}`);
 });
