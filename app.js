@@ -31,23 +31,23 @@ let now = new Date();
 let dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 let prevDayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
 
-app.get('/api/markets', (req, res) => {
+app.get('/markets', (req, res) => {
   res.json({ markets: data.marketIds });
 });
 
-app.get('/api/spreads', async (req, res) => {
+app.get('/spreads', async (req, res) => {
   const spreads = await functions.fetchBudaForSpreadInfo();
   res.json(spreads);
 });
 
-app.get('/api/spreads/:marketid', async (req, res) => {
+app.get('/spreads/:marketid', async (req, res) => {
   const market = await functions.fetchBudaForIndividualSpreadInfo(
     req.params.marketid
   );
   res.json({ market });
 });
 
-app.get('/api/spreads/:marketid/:frequence', async (req, res) => {
+app.get('/spreads/:marketid/:frequence', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Transfer-Encoding', 'chunked');
 
