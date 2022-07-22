@@ -13,6 +13,7 @@ router.get('/', async (req, res) => {
     const spreads = await functions.fetchBudaForSpreadInfo();
     res.status(200).json(spreads);
   } catch (error) {
+    console.log('inside the spreads route, the error is: ', error);
     res.status(500).json({ message: 'Not found', code: 'not_found' });
   }
 });
