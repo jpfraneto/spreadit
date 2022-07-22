@@ -52,9 +52,9 @@ app.get('/welcome', (req, res) => {
   });
 });
 
-app.use('/markets', marketsRoutes);
-app.use('/spreads', spreadsRoutes);
-app.use('/u', userRoutes);
+app.use('/api/markets', marketsRoutes);
+app.use('/api/spreads', spreadsRoutes);
+app.use('/api/u', userRoutes);
 
 // async function getMarkets() {
 //   const budaResponse = await axios.get('https://www.buda.com/api/v2/markets');
@@ -89,10 +89,17 @@ app.use('/u', userRoutes);
 //   }
 // }, 1000);
 
-app.get('/*', (req, res) => {
+app.get('/api/*', (req, res) => {
   res.status(404).json({
     message:
       'That route does not have information at this moment. If you want me to add something, please write me an email to jp@theopensourcefactory.com, or just contribute on Github: https://github.com/jpfraneto/spreadit',
+  });
+});
+
+app.get('/*', (req, res) => {
+  res.status(404).json({
+    message:
+      'This is the API for spreadit. Check out the docs at docs.spreadit.pro',
   });
 });
 
