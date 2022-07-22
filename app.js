@@ -56,38 +56,38 @@ app.use('/markets', marketsRoutes);
 app.use('/spreads', spreadsRoutes);
 app.use('/u', userRoutes);
 
-async function getMarkets() {
-  const budaResponse = await axios.get('https://www.buda.com/api/v2/markets');
-  markets = budaResponse.data.markets.map(market => {
-    return market.name;
-  });
-  app.set('markets', markets);
-}
-getMarkets();
+// async function getMarkets() {
+//   const budaResponse = await axios.get('https://www.buda.com/api/v2/markets');
+//   markets = budaResponse.data.markets.map(market => {
+//     return market.name;
+//   });
+//   app.set('markets', markets);
+// }
+// getMarkets();
 
 //This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
-setInterval(async () => {
-  //calculate the spreads of spotted markets
-  const now = new Date().getTime();
-  if (
-    spottedMarkets && // 👈 null and undefined check
-    Object.keys(spottedMarkets).length === 0 &&
-    Object.getPrototypeOf(spottedMarkets) === Object.prototype
-  )
-    return;
-  for (const key in spottedMarkets) {
-    if (key) {
-      marketSpreadObject = await functions.fetchBudaForIndividualSpreadInfo(
-        key
-      );
-      marketSpreadValue = Number(marketSpreadObject.spread[0]);
-      spottedMarkets[key] = {
-        timestamp: now,
-        spread: marketSpreadValue,
-      };
-    }
-  }
-}, 1000);
+// setInterval(async () => {
+//   //calculate the spreads of spotted markets
+//   const now = new Date().getTime();
+//   if (
+//     spottedMarkets && // 👈 null and undefined check
+//     Object.keys(spottedMarkets).length === 0 &&
+//     Object.getPrototypeOf(spottedMarkets) === Object.prototype
+//   )
+//     return;
+//   for (const key in spottedMarkets) {
+//     if (key) {
+//       marketSpreadObject = await functions.fetchBudaForIndividualSpreadInfo(
+//         key
+//       );
+//       marketSpreadValue = Number(marketSpreadObject.spread[0]);
+//       spottedMarkets[key] = {
+//         timestamp: now,
+//         spread: marketSpreadValue,
+//       };
+//     }
+//   }
+// }, 1000);
 
 app.get('/*', (req, res) => {
   res.status(404).json({
