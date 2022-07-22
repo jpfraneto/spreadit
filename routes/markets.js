@@ -9,6 +9,7 @@ router.get('/', async (req, res) => {
     console.log('IN HERE, THE MARKETS ARE: ', markets);
     res.status(200).json({ markets });
   } catch (error) {
+    console.log('the error is: ', error);
     res.status(500).json({ message: 'Not found', code: 'not_found' });
   }
 });
