@@ -4,8 +4,9 @@ const functions = require('../lib/functions');
 const data = require('../data/markets');
 
 router.get('/', async (req, res) => {
+  let markets = req.app.get('markets');
   try {
-    const markets = await functions.fetchBudaForMarketsInfo();
+    // const markets = await functions.fetchBudaForMarketsInfo();
     console.log('IN HERE, THE MARKETS ARE: ', markets);
     res.status(200).json({ markets });
   } catch (error) {

@@ -9,8 +9,8 @@ let responses = {};
 const alertas = {};
 
 router.get('/', async (req, res) => {
+  let spreads = req.app.get('spreads');
   try {
-    const spreads = await functions.fetchBudaForSpreadInfo();
     res.status(200).json(spreads);
   } catch (error) {
     console.log('inside the spreads route, the error is: ', error);
