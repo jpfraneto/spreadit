@@ -2,19 +2,12 @@ require('dotenv').config();
 
 const express = require('express');
 const app = express();
-const axios = require('axios').default;
 const path = require('path');
 const cors = require('cors');
-const data = require('./data/markets');
+const crypto = require('crypto');
+const axios = require('axios');
+
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const functions = require('./middleware/functions');
-
-app.use(cors());
-app.use(express.json());
-app.set('view engine', 'ejs');
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/public'));
 
 const uri = process.env.MONGODB_URI;
 
@@ -24,104 +17,93 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-let connections = [];
-const LIMIT = 20;
-const DELAY = 1000;
-let now = new Date();
-let dayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
-let prevDayIdentifier = now.getFullYear() + now.getDate() + now.getMonth();
+const marketsRoutes = require('./routes/markets');
+const spreadsRoutes = require('./routes/spreads');
+const userRoutes = require('./routes/u');
 
-app.get('/markets', (req, res) => {
-  res.json({ markets: data.marketIds });
+const functions = require('./lib/functions');
+
+let alertas = {};
+let spottedMarkets = {};
+let markets;
+
+app.use(function (req, res, next) {
+  req.id = crypto.randomBytes(4).toString('hex');
+  next();
+});
+app.use(cors());
+app.use(express.json());
+app.set('view engine', 'ejs');
+app.set('alertas', alertas);
+app.set('spottedMarkets', spottedMarkets);
+app.set('client', client);
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname + '/public'));
+
+app.get('/', (req, res) => {
+  res.status(200).render('landing');
 });
 
-app.get('/spreads', async (req, res) => {
-  const spreads = await functions.fetchBudaForSpreadInfo();
-  res.json(spreads);
+app.get('/welcome', (req, res) => {
+  res.status(200).send({
+    message:
+      'Welcome to SPREADIT! I will get that job at Buda and will thrive as a programmer in there.',
+  });
 });
 
-app.get('/spreads/:marketid', async (req, res) => {
-  const market = await functions.fetchBudaForIndividualSpreadInfo(
-    req.params.marketid
-  );
-  res.json({ market });
-});
+app.use('/markets', marketsRoutes);
+app.use('/spreads', spreadsRoutes);
+app.use('/u', userRoutes);
 
-app.get('/spreads/:marketid/:frequence', async (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Transfer-Encoding', 'chunked');
+async function getMarkets() {
+  const budaResponse = await axios.get('https://www.buda.com/api/v2/markets');
+  markets = budaResponse.data.markets.map(market => {
+    return market.name;
+  });
+  app.set('markets', markets);
+}
+getMarkets();
 
-  connections.push(res);
-
-  try {
-    const marketId =
-      data.marketIds.indexOf(req.params.marketid.toUpperCase()) > -1
-        ? req.params.marketid
-        : null;
-    if (!marketId)
-      return res.status(404).json({ message: 'Invalid market id' });
-    const frequence = Number(req.params.frequence.match(/^[0-9]*/)[0]);
-    if (!frequence)
-      return res.status(404).json({
-        message:
-          'Invalid frequence of pooling. The route you are calling should be in the form of /api/spreads/<market_id>/<frequency>, where the frequency parameter is the amount of ms between calls in the pooling',
-      });
-    if (frequence < 55)
-      return res.status(404).json({
-        message:
-          'With such a low frequency you will burn our servers and we will get banned from buda.com. Please increase the frequence of pooling :)',
-      });
-    let market = await functions.fetchBudaForIndividualSpreadInfo(marketId);
-    let baseSpread, newSpread;
-    baseSpread = Number(market.spread[0]);
-
-    let ansObj = {
-      minSpread: baseSpread,
-      maxSpread: baseSpread,
-      spreadComparison: 'initial',
-      timestamp: new Date().getTime(),
-      spread: baseSpread,
-    };
-    res.write(JSON.stringify(ansObj));
-
-    setTimeout(async function run() {
-      market = await functions.fetchBudaForIndividualSpreadInfo(
-        req.params.marketid
+//This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
+setInterval(async () => {
+  //calculate the spreads of spotted markets
+  const now = new Date().getTime();
+  if (
+    spottedMarkets && // 👈 null and undefined check
+    Object.keys(spottedMarkets).length === 0 &&
+    Object.getPrototypeOf(spottedMarkets) === Object.prototype
+  )
+    return;
+  for (const key in spottedMarkets) {
+    if (key) {
+      marketSpreadObject = await functions.fetchBudaForIndividualSpreadInfo(
+        key
       );
-      newSpread = Number(market.spread[0]);
-
-      ansObj.spread = newSpread;
-      ansObj.timestamp = new Date().getTime();
-
-      if (baseSpread < newSpread) {
-        ansObj.spreadComparison = 'mayor';
-        if (ansObj.maxSpread < newSpread) {
-          ansObj.maxSpread = newSpread;
-          ansObj.extremePoint = true;
-        }
-      } else if (newSpread < baseSpread) {
-        ansObj.spreadComparison = 'menor';
-        if (newSpread < ansObj.minSpread) {
-          ansObj.minSpread = newSpread;
-          ansObj.extremePoint = true;
-        }
-      } else if (baseSpread === newSpread) ansObj.spreadComparison = 'igual';
-
-      res.write(JSON.stringify(ansObj));
-      delete ansObj.extremePoint;
-      setTimeout(run, frequence);
-    }, frequence);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'An error ocurred' });
+      marketSpreadValue = Number(marketSpreadObject.spread[0]);
+      spottedMarkets[key] = {
+        timestamp: now,
+        spread: marketSpreadValue,
+      };
+    }
   }
-});
+}, 1000);
 
 app.get('/*', (req, res) => {
-  res.render('landing', { marketIds: data.marketIds });
+  res.status(404).json({
+    message:
+      'That route does not have information at this moment. If you want me to add something, please write me an email to jp@theopensourcefactory.com, or just contribute on Github: https://github.com/jpfraneto/spreadit',
+  });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Express server listening at ${port}`);
+const port = process.env.PORT || 3001;
+
+var server = app.listen(port, () => {
+  var host = server.address().address;
+  var puerto = server.address().port;
+  console.log(
+    `The spreadit server is listening at port: ${puerto}, with host: ${host}`
+  );
 });
+
+module.exports = app;
