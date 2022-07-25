@@ -56,39 +56,39 @@ app.use('/api/markets', marketsRoutes);
 app.use('/api/spreads', spreadsRoutes);
 app.use('/api/u', userRoutes);
 
-async function getMarkets() {
-  const budaResponse = await axios.get('https://www.buda.com/api/v2/markets');
-  markets = budaResponse.data.markets.map(market => {
-    return market.name;
-  });
-  app.set('markets', markets);
-  getMarketSpreads();
-  let timerId = setInterval(getMarketSpreads, 20000);
-}
-getMarkets();
+// async function getMarkets() {
+//   const budaResponse = await axios.get('https://www.buda.com/api/v2/markets');
+//   markets = budaResponse.data.markets.map(market => {
+//     return market.name;
+//   });
+//   app.set('markets', markets);
+//   getMarketSpreads();
+//   let timerId = setInterval(getMarketSpreads, 20000);
+// }
+// getMarkets();
 
-async function getMarketSpreads() {
-  try {
-    const response = await Promise.all(
-      markets.map(market => {
-        return axios.get(
-          `https://www.buda.com/api/v2/markets/${market}/ticker.json`
-        );
-      })
-    );
-    const marketsInfo = response.map(market => market.data.ticker);
-    const marketsSpreads = marketsInfo.map(market => {
-      let spreadValue = functions.calculateSpread(market);
-      return {
-        id: market.market_id,
-        spread: [spreadValue, market.min_ask[1]],
-        volume: market.volume,
-      };
-    });
-    let spreads = { marketsSpreads, timestamp: new Date().getTime() };
-    app.set('spreads', spreads);
-  } catch (error) {}
-}
+// async function getMarketSpreads() {
+//   try {
+//     const response = await Promise.all(
+//       markets.map(market => {
+//         return axios.get(
+//           `https://www.buda.com/api/v2/markets/${market}/ticker.json`
+//         );
+//       })
+//     );
+//     const marketsInfo = response.map(market => market.data.ticker);
+//     const marketsSpreads = marketsInfo.map(market => {
+//       let spreadValue = functions.calculateSpread(market);
+//       return {
+//         id: market.market_id,
+//         spread: [spreadValue, market.min_ask[1]],
+//         volume: market.volume,
+//       };
+//     });
+//     let spreads = { marketsSpreads, timestamp: new Date().getTime() };
+//     app.set('spreads', spreads);
+//   } catch (error) {}
+// }
 
 //This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
 // setInterval(async () => {
