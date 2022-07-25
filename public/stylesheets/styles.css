@@ -1,6 +1,11 @@
 body {
+  padding-top: 44px;
 }
 .table-header > * {
   font-size: 0.7rem;
   margin: 0 4px;
+}
+
+.container {
+  max-width: 666px;
 }

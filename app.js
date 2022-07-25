@@ -68,24 +68,26 @@ async function getMarkets() {
 getMarkets();
 
 async function getMarketSpreads() {
-  const response = await Promise.all(
-    markets.map(market => {
-      return axios.get(
-        `https://www.buda.com/api/v2/markets/${market}/ticker.json`
-      );
-    })
-  );
-  const marketsInfo = response.map(market => market.data.ticker);
-  const marketsSpreads = marketsInfo.map(market => {
-    let spreadValue = functions.calculateSpread(market);
-    return {
-      id: market.market_id,
-      spread: [spreadValue, market.min_ask[1]],
-      volume: market.volume,
-    };
-  });
-  let spreads = { marketsSpreads, timestamp: new Date().getTime() };
-  app.set('spreads', spreads);
+  try {
+    const response = await Promise.all(
+      markets.map(market => {
+        return axios.get(
+          `https://www.buda.com/api/v2/markets/${market}/ticker.json`
+        );
+      })
+    );
+    const marketsInfo = response.map(market => market.data.ticker);
+    const marketsSpreads = marketsInfo.map(market => {
+      let spreadValue = functions.calculateSpread(market);
+      return {
+        id: market.market_id,
+        spread: [spreadValue, market.min_ask[1]],
+        volume: market.volume,
+      };
+    });
+    let spreads = { marketsSpreads, timestamp: new Date().getTime() };
+    app.set('spreads', spreads);
+  } catch (error) {}
 }
 
 //This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
