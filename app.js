@@ -6,6 +6,7 @@ const path = require('path');
 const cors = require('cors');
 const crypto = require('crypto');
 const axios = require('axios');
+const data = require('./data/markets');
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
@@ -25,7 +26,7 @@ const functions = require('./lib/functions');
 
 let alertas = {};
 let spottedMarkets = {};
-let markets;
+let markets = data.marketIds;
 
 app.use(function (req, res, next) {
   req.id = crypto.randomBytes(4).toString('hex');
@@ -67,28 +68,35 @@ app.use('/api/u', userRoutes);
 // }
 // getMarkets();
 
-// async function getMarketSpreads() {
-//   try {
-//     const response = await Promise.all(
-//       markets.map(market => {
-//         return axios.get(
-//           `https://www.buda.com/api/v2/markets/${market}/ticker.json`
-//         );
-//       })
-//     );
-//     const marketsInfo = response.map(market => market.data.ticker);
-//     const marketsSpreads = marketsInfo.map(market => {
-//       let spreadValue = functions.calculateSpread(market);
-//       return {
-//         id: market.market_id,
-//         spread: [spreadValue, market.min_ask[1]],
-//         volume: market.volume,
-//       };
-//     });
-//     let spreads = { marketsSpreads, timestamp: new Date().getTime() };
-//     app.set('spreads', spreads);
-//   } catch (error) {}
-// }
+async function getMarketSpreads() {
+  console.log('fetching for market spreads once more')
+  try {
+    const response = await Promise.all(
+      markets.map(market => {
+        return axios.get(
+          `https://www.buda.com/api/v2/markets/${market}/ticker.json`
+        );
+      })
+    );
+    const marketsInfo = response.map(market => market.data.ticker);
+    const marketsSpreads = marketsInfo.map(market => {
+      let spreadValue = functions.calculateSpread(market);
+      return {
+        id: market.market_id,
+        spread: [spreadValue, market.min_ask[1]],
+        volume: market.volume,
+      };
+    });
+    let spreads = { marketsSpreads, timestamp: new Date().getTime() };
+    console.log('IN HERE, THERE ARE SPREADS', spreads)
+    app.set('spreads', spreads);
+  } catch (error) {
+    console.log('there was an error', error)
+  }
+}
+
+getMarketSpreads();
+const spreadsIntervalId = setInterval(getMarketSpreads, 10000);
 
 //This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
 // setInterval(async () => {

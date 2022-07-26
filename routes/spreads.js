@@ -18,6 +18,18 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.post('/', async (req, res) => {
+  let spreads = req.app.get('spreads');
+  if(!spreads) await setTimeout(null,2000);
+  const filtered = spreads.marketsSpreads.filter(x=>req.body.markets.includes(x.id.toLowerCase()))
+  try {
+    res.status(200).json({spreads:filtered});
+  } catch (error) {
+    console.log('inside the spreads route, the error is: ', error);
+    res.status(500).json({ message: 'Not found', code: 'not_found' });
+  }
+});
+
 const EventEmitter = require('../event');
 const eventEmitter = new EventEmitter();
 
@@ -45,12 +57,15 @@ router.get('/pooling', (req, res) => {
 });
 
 router.get('/:marketid', async (req, res) => {
+  let spreads = req.app.get('spreads');
+  console.log('IN HERE!, THE MARKET ID IS: ', req.params.marketid);
+  console.log('and the spreads array is: ', spreads)
   try {
-    const marketSpread = await functions.fetchBudaForIndividualSpreadInfo(
-      req.params.marketid
-    );
+    const spreadIndex = spreads.marketsSpreads.findIndex(x=>x.id.toLowerCase() === req.params.marketid);
+    const marketSpread = spreads.marketsSpreads[spreadIndex]
     res.status(200).json(marketSpread);
   } catch (error) {
+    console.log('the error is: ', error);
     res.status(500).json({ message: 'Not Found', code: 'not_found' });
   }
 });
