@@ -9,6 +9,7 @@ let responses = {};
 const alertas = {};
 
 router.get('/', async (req, res) => {
+  console.log('within the spreads base route')
   let spreads = req.app.get('spreads');
   try {
     res.status(200).json(spreads);
