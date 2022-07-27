@@ -34,6 +34,7 @@ app.use(function (req, res, next) {
 });
 app.use(cors());
 app.use(express.json());
+app.use('/favicon.ico', express.static('images/favicon.ico'));
 app.set('view engine', 'ejs');
 app.set('alertas', alertas);
 app.set('spottedMarkets', spottedMarkets);
@@ -69,7 +70,7 @@ app.use('/api/u', userRoutes);
 // getMarkets();
 
 async function getMarketSpreads() {
-  console.log('fetching for market spreads once more')
+  console.log('fetching for market spreads once more');
   try {
     const response = await Promise.all(
       markets.map(market => {
@@ -88,10 +89,10 @@ async function getMarketSpreads() {
       };
     });
     let spreads = { marketsSpreads, timestamp: new Date().getTime() };
-    console.log('IN HERE, THERE ARE SPREADS', spreads)
+    console.log('IN HERE, THERE ARE SPREADS', spreads);
     app.set('spreads', spreads);
   } catch (error) {
-    console.log('there was an error', error)
+    console.log('there was an error', error);
   }
 }
 
