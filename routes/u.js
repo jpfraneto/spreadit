@@ -3,11 +3,11 @@ let router = express.Router();
 const functions = require('../lib/functions');
 const data = require('../data/markets');
 const crypto = require('crypto');
+const client = require('../lib/mongodb')
 
 router.post('/', async (req, res) => {
   const { username, password } = req.body;
   const hash = crypto.createHash('sha256').update(password).digest('hex');
-  let client = req.app.get('client');
   try {
     await client.connect();
     const usersCollection = await client.db('test').collection('users');
@@ -34,7 +34,6 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/:username/alertas', async (req, res) => {
-  let client = req.app.get('client');
   try {
     await client.connect();
     const thisUser = await client.db('test').collection('users').findOne({
@@ -56,10 +55,9 @@ router.get('/:username/alertas', async (req, res) => {
   }
 });
 
-router.post('/:username/alerta', async (req, res) => {
-  let client = req.app.get('client');
+router.post('/:username/alertas', async (req, res) => {
   let markets = req.app.get('markets');
-  if (!markets.includes(req.body.marketid))
+  if (!markets.includes(req.body.marketid.toUpperCase()))
     return res.status(401).json({ message: 'Ese mercado no está disponible.' });
   try {
     await client.connect();
@@ -69,8 +67,10 @@ router.post('/:username/alerta', async (req, res) => {
     });
 
     const newAlert = {
+      username: req.params.username,
       market: req.body.marketid,
       triggering: req.body.triggering,
+      priceComparer: req.body.priceComparer,
       prize_alert: req.body.prize_alert,
       triggered: [],
       timestamp: new Date().getTime(),
@@ -126,6 +126,7 @@ router.post('/:username/alerta', async (req, res) => {
         username: req.params.username,
       });
     }
+    addNewAlert(newAlert);
     res.json({ message });
   } catch (error) {
     console.log('There was an error', error);
@@ -134,5 +135,10 @@ router.post('/:username/alerta', async (req, res) => {
     await client.close();
   }
 });
+
+const addNewAlert = async newAlert => {
+  await client.connect()
+  const dbresponse = await client.db('test').collection('active-alerts').insertOne(newAlert);
+}
 
 module.exports = router;

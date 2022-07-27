@@ -116,6 +116,11 @@ router.post('/:marketid', async (req, res) => {
   }, 1000);
 });
 
+router.get('/:marketid/history', async (req, res) => {
+  console.log('inside this route');
+  res.status(200).json({aloja:123})
+})
+
 router.get('/:marketid/:frequence', async (req, res) => {
   res.setHeader('Transfer-Encoding', 'chunked');
 

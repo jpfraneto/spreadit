@@ -7,16 +7,17 @@ const cors = require('cors');
 const crypto = require('crypto');
 const axios = require('axios');
 const data = require('./data/markets');
+const client = require('./lib/mongodb')
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
-
-const uri = process.env.MONGODB_URI;
-
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverApi: ServerApiVersion.v1,
-});
+// const { MongoClient, ServerApiVersion } = require('mongodb');
+//
+// const uri = process.env.MONGODB_URI;
+//
+// const client = new MongoClient(uri, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+//   serverApi: ServerApiVersion.v1,
+// });
 
 const marketsRoutes = require('./routes/markets');
 const spreadsRoutes = require('./routes/spreads');
@@ -27,6 +28,7 @@ const functions = require('./lib/functions');
 let alertas = {};
 let spottedMarkets = {};
 let markets = data.marketIds;
+let counter = 0;
 
 app.use(function (req, res, next) {
   req.id = crypto.randomBytes(4).toString('hex');
@@ -39,6 +41,8 @@ app.set('view engine', 'ejs');
 app.set('alertas', alertas);
 app.set('spottedMarkets', spottedMarkets);
 app.set('client', client);
+app.set('markets',  markets);
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
@@ -70,7 +74,6 @@ app.use('/api/u', userRoutes);
 // getMarkets();
 
 async function getMarketSpreads() {
-  console.log('fetching for market spreads once more');
   try {
     const response = await Promise.all(
       markets.map(market => {
@@ -89,15 +92,24 @@ async function getMarketSpreads() {
       };
     });
     let spreads = { marketsSpreads, timestamp: new Date().getTime() };
-    console.log('IN HERE, THERE ARE SPREADS', spreads);
     app.set('spreads', spreads);
+    functions.checkAllActiveAlerts(spreads);
+    // This is for saving the spreads in the DB
+    // await client.connect();
+    // if(counter===100) {
+    //   counter = 0;
+    // };
+    // await Promise.all(spreads.marketsSpreads.map(spread=> {
+    //   return client.db('spreads-history').collection(spread.id.toLowerCase()).insertOne({timestamp:spreads.timestamp, spread:spread.spread[0], spreadUnit:spread.spread[1]})
+    // }))
+    // counter++
   } catch (error) {
     console.log('there was an error', error);
   }
 }
 
 getMarketSpreads();
-const spreadsIntervalId = setInterval(getMarketSpreads, 10000);
+const spreadsIntervalId = setInterval(getMarketSpreads, 20000);
 
 //This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
 // setInterval(async () => {
