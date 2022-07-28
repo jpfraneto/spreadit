@@ -7,7 +7,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const axios = require('axios');
 const data = require('./data/markets');
-const client = require('./lib/mongodb')
+const client = require('./lib/mongodb');
 
 // const { MongoClient, ServerApiVersion } = require('mongodb');
 //
@@ -41,8 +41,7 @@ app.set('view engine', 'ejs');
 app.set('alertas', alertas);
 app.set('spottedMarkets', spottedMarkets);
 app.set('client', client);
-app.set('markets',  markets);
-
+app.set('markets', markets);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
@@ -91,7 +90,7 @@ async function getMarketSpreads() {
         volume: market.volume,
       };
     });
-    let spreads = { marketsSpreads, timestamp: new Date().getTime() };
+    let spreads = { spreads: marketsSpreads, timestamp: new Date().getTime() };
     app.set('spreads', spreads);
     functions.checkAllActiveAlerts(spreads);
     // This is for saving the spreads in the DB

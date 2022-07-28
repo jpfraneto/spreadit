@@ -3,7 +3,7 @@ let router = express.Router();
 const functions = require('../lib/functions');
 const data = require('../data/markets');
 const crypto = require('crypto');
-const client = require('../lib/mongodb')
+const client = require('../lib/mongodb');
 
 router.post('/', async (req, res) => {
   const { username, password } = req.body;
@@ -119,8 +119,8 @@ router.post('/:username/alertas', async (req, res) => {
     }
     if (newAlert.triggering) {
       const triggeringAlertsCollection = await client
-        .db('metaverse')
-        .collection('triggering_alerts');
+        .db('test')
+        .collection('alerts');
       await triggeringAlertsCollection.insertOne({
         ...newAlert,
         username: req.params.username,
@@ -137,8 +137,11 @@ router.post('/:username/alertas', async (req, res) => {
 });
 
 const addNewAlert = async newAlert => {
-  await client.connect()
-  const dbresponse = await client.db('test').collection('active-alerts').insertOne(newAlert);
-}
+  await client.connect();
+  const dbresponse = await client
+    .db('test')
+    .collection('alerts')
+    .insertOne(newAlert);
+};
 
 module.exports = router;

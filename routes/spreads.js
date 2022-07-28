@@ -2,6 +2,10 @@ let express = require('express');
 let router = express.Router();
 const functions = require('../lib/functions');
 const data = require('../data/markets');
+const crypto = require('crypto');
+const client = require('../lib/mongodb');
+const {ObjectId} = require('mongodb')
+const { generateUsername } = require('unique-username-generator');
 
 let subscribers = Object.create(null);
 let requestCounter = 0;
@@ -9,7 +13,6 @@ let responses = {};
 const alertas = {};
 
 router.get('/', async (req, res) => {
-  console.log('within the spreads base route')
   let spreads = req.app.get('spreads');
   try {
     res.status(200).json(spreads);
@@ -21,15 +24,99 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   let spreads = req.app.get('spreads');
-  if(!spreads) await setTimeout(null,2000);
-  const filtered = spreads.marketsSpreads.filter(x=>req.body.markets.includes(x.id.toLowerCase()))
+  if (!spreads) await setTimeout(null, 2000);
+  const filtered = spreads.marketsSpreads.filter(x =>
+    req.body.markets.includes(x.id.toLowerCase())
+  );
   try {
-    res.status(200).json({spreads:filtered});
+    res.status(200).json({ spreads: filtered });
   } catch (error) {
     console.log('inside the spreads route, the error is: ', error);
     res.status(500).json({ message: 'Not found', code: 'not_found' });
   }
 });
+
+router.post('/alert', async (req, res) => {
+  try {
+    let { alert_price, email, price_comparer, triggering, market, username } =
+      req.body;
+    if(!data.marketIds.includes(market.toUpperCase())) return res.status(500).json({message: 'Please enter a valid market value'});
+    if(!['biggerThan', 'lessThan'].includes(price_comparer) ) return res.status(500).json({message: 'Invalid price comparer. Please use biggerThan or lessThan'})
+    await client.connect();
+    const foundUser = await client
+      .db('test')
+      .collection('users')
+      .findOne({ username });
+    if (!foundUser && !username) username = generateUsername();
+    const newAlert = {
+      alert_price,
+      email,
+      price_comparer,
+      triggering,
+      market,
+      username,
+    };
+    const db_response = await client
+      .db('test')
+      .collection('alerts')
+      .insertOne(newAlert);
+    newAlert._id = db_response.insertedId.toString();
+    if (foundUser) {
+      await client
+        .db('test')
+        .collection('users')
+        .updateOne({ username }, { $push: { alerts: newAlert } });
+      return res.status(200).json({
+        username,
+        success: true,
+        alert_id: newAlert._id,
+        message:
+          'Your alert was saved in the DB. You can only access it with this ID, so storec it somewhere safe!',
+      });
+    } else {
+      await client
+        .db('test')
+        .collection('users')
+        .insertOne({ username, alerts: [newAlert] });
+      return res.status(200).json({
+        unique_username: username,
+        success: true,
+        alert_id: newAlert._id,
+        message:
+          'Your alert was saved in the DB. You can only access it with this ID, so storec it somewhere safe!',
+      });
+    }
+  } catch (error) {
+    console.log('There was an error', error);
+    res.status(500).json({ message: 'There was a problem saving the alert.' });
+  }
+});
+
+router.get('/alerts', async (req, res) => {
+  try {
+    await client.connect();
+    const alerts = await client
+      .db('test')
+      .collection('alerts')
+      .find({})
+      .toArray();
+    res.json({ alerts });
+  } catch (error) {
+    console.log('there was an error in the /api/spreads/alerts route', error);
+    res.status(500).json({ message: 'Not found' });
+  }
+});
+
+router.get('/alert/:alert_id', async (req, res) => {
+  try {
+    await client.connect();
+    const thisAlert = await client.db('test').collection('alerts').findOne({_id: new ObjectId(req.params.alert_id)});
+    res.status(200).json({alert: thisAlert})
+  } catch(err) {
+    console.log('There was an error fetching that alert');
+    res.status(500).json({message: 'Not Found'})
+  }
+})
 
 const EventEmitter = require('../event');
 const eventEmitter = new EventEmitter();
@@ -47,9 +134,7 @@ router.get('/pooling', (req, res) => {
 
   eventEmitter.register(id, handler);
   timer = setTimeout(function () {
-    console.log('timeout');
     const wasUnregistered = eventEmitter.unregister(id);
-    console.log('wasUnregistered', wasUnregistered);
     if (wasUnregistered) {
       res.status(200);
       res.end();
@@ -59,11 +144,11 @@ router.get('/pooling', (req, res) => {
 
 router.get('/:marketid', async (req, res) => {
   let spreads = req.app.get('spreads');
-  console.log('IN HERE!, THE MARKET ID IS: ', req.params.marketid);
-  console.log('and the spreads array is: ', spreads)
   try {
-    const spreadIndex = spreads.marketsSpreads.findIndex(x=>x.id.toLowerCase() === req.params.marketid);
-    const marketSpread = spreads.marketsSpreads[spreadIndex]
+    const spreadIndex = spreads.spreads.findIndex(
+      x => x.id.toLowerCase() === req.params.marketid
+    );
+    const marketSpread = spreads.spreads[spreadIndex];
     res.status(200).json(marketSpread);
   } catch (error) {
     console.log('the error is: ', error);
@@ -117,9 +202,8 @@ router.post('/:marketid', async (req, res) => {
 });
 
 router.get('/:marketid/history', async (req, res) => {
-  console.log('inside this route');
-  res.status(200).json({aloja:123})
-})
+  res.status(200).json({ aloja: 123 });
+});
 
 router.get('/:marketid/:frequence', async (req, res) => {
   res.setHeader('Transfer-Encoding', 'chunked');
