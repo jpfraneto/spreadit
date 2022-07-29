@@ -58,7 +58,7 @@ router.post('/alert', async (req, res) => {
     if (!foundUser && !username) username = generateUsername();
     const newAlert = {
       alert_price,
-    
+
       price_comparer,
       triggering,
       market,
@@ -122,7 +122,7 @@ router.get('/alert/:alert_id', async (req, res) => {
       .db('test')
       .collection('alerts')
       .findOne({ _id: new ObjectId(req.params.alert_id) });
-    res.status(200).json({ alert: thisAlert });
+    res.status(200).json({ ...thisAlert });
   } catch (err) {
     console.log('There was an error fetching that alert');
     res.status(500).json({ message: 'Not Found' });
@@ -285,5 +285,9 @@ router.get('/:marketid/:frequence', async (req, res) => {
     res.status(500).json({ message: 'An error ocurred' });
   }
 });
+
+router.get('/*', (req, res) => {
+  res.status(401).json({message: 'Invalid route.'})
+})
 
 module.exports = router;
