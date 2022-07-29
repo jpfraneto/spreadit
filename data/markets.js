@@ -1,30 +1,5 @@
 const data = {};
 
-data.marketIds = [
-  'BTC-CLP',
-  'BTC-COP',
-  'ETH-CLP',
-  'ETH-BTC',
-  'BTC-PEN',
-  'ETH-PEN',
-  'ETH-COP',
-  'BCH-BTC',
-  'BCH-CLP',
-  'BCH-COP',
-  'BCH-PEN',
-  'BTC-ARS',
-  'ETH-ARS',
-  'BCH-ARS',
-  'LTC-BTC',
-  'LTC-CLP',
-  'LTC-COP',
-  'LTC-PEN',
-  'LTC-ARS',
-  'USDC-CLP',
-  'USDC-COP',
-  'USDC-PEN',
-  'USDC-ARS',
-  'BTC-USDC',
-];
+data.marketIds = ['btc-clp', 'btc-cop', 'eth-clp', 'eth-btc', 'btc-pen', 'eth-pen', 'eth-cop', 'bch-btc', 'bch-clp', 'bch-cop', 'bch-pen', 'btc-ars', 'eth-ars', 'bch-ars', 'ltc-btc', 'ltc-clp', 'ltc-cop', 'ltc-pen', 'ltc-ars', 'usdc-clp', 'usdc-cop', 'usdc-pen', 'usdc-ars', 'btc-usdc'];
 
 module.exports = data;

@@ -108,7 +108,7 @@ async function getMarketSpreads() {
 }
 
 getMarketSpreads();
-const spreadsIntervalId = setInterval(getMarketSpreads, 20000);
+const spreadsIntervalId = setInterval(getMarketSpreads, 30000);
 
 //This should only be ran if the spotted markets object is non empty. If it is empty, there is no need for it to run.
 // setInterval(async () => {

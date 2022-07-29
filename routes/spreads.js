@@ -4,7 +4,7 @@ const functions = require('../lib/functions');
 const data = require('../data/markets');
 const crypto = require('crypto');
 const client = require('../lib/mongodb');
-const {ObjectId} = require('mongodb')
+const { ObjectId } = require('mongodb');
 const { generateUsername } = require('unique-username-generator');
 
 let subscribers = Object.create(null);
@@ -38,10 +38,18 @@ router.post('/', async (req, res) => {
 
 router.post('/alert', async (req, res) => {
   try {
-    let { alert_price, email, price_comparer, triggering, market, username } =
+    let { alert_price, price_comparer, triggering, market, username } =
       req.body;
-    if(!data.marketIds.includes(market.toUpperCase())) return res.status(500).json({message: 'Please enter a valid market value'});
-    if(!['biggerThan', 'lessThan'].includes(price_comparer) ) return res.status(500).json({message: 'Invalid price comparer. Please use biggerThan or lessThan'})
+    if (!data.marketIds.includes(market))
+      return res
+        .status(500)
+        .json({ message: 'Please enter a valid market value' });
+    if (!['biggerThan', 'lessThan'].includes(price_comparer))
+      return res
+        .status(500)
+        .json({
+          message: 'Invalid price comparer. Please use biggerThan or lessThan',
+        });
     await client.connect();
     const foundUser = await client
       .db('test')
@@ -50,7 +58,7 @@ router.post('/alert', async (req, res) => {
     if (!foundUser && !username) username = generateUsername();
     const newAlert = {
       alert_price,
-      email,
+    
       price_comparer,
       triggering,
       market,
@@ -88,7 +96,7 @@ router.post('/alert', async (req, res) => {
     }
   } catch (error) {
     console.log('There was an error', error);
-    res.status(500).json({ message: 'There was a problem saving the alert.' });
+    res.status(500).json({ message: 'There was a problem saving the alert.', success: false });
   }
 });
 
@@ -110,13 +118,16 @@ router.get('/alerts', async (req, res) => {
 router.get('/alert/:alert_id', async (req, res) => {
   try {
     await client.connect();
-    const thisAlert = await client.db('test').collection('alerts').findOne({_id: new ObjectId(req.params.alert_id)});
-    res.status(200).json({alert: thisAlert})
-  } catch(err) {
+    const thisAlert = await client
+      .db('test')
+      .collection('alerts')
+      .findOne({ _id: new ObjectId(req.params.alert_id) });
+    res.status(200).json({ alert: thisAlert });
+  } catch (err) {
     console.log('There was an error fetching that alert');
-    res.status(500).json({message: 'Not Found'})
+    res.status(500).json({ message: 'Not Found' });
   }
-})
+});
 
 const EventEmitter = require('../event');
 const eventEmitter = new EventEmitter();
@@ -202,6 +213,9 @@ router.post('/:marketid', async (req, res) => {
 });
 
 router.get('/:marketid/history', async (req, res) => {
+  console.log(
+    'I should be able to reach the history of a particular market here.'
+  );
   res.status(200).json({ aloja: 123 });
 });
 
